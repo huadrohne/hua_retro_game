@@ -1,0 +1,148 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>HUADROHNE Retro Game</title>
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #111;
+      touch-action: none;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="gameCanvas" width="480" height="640"></canvas>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let keys = { left: false, right: false };
+    let frame = 0;
+    let bullets = [];
+    let enemies = [];
+
+    let player = {
+      x: canvas.width / 2 - 25,
+      y: canvas.height - 80,
+      width: 50,
+      height: 50,
+      speed: 5,
+      image: new Image()
+    };
+
+    player.image.src = "data:image/png;base64,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";
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowLeft') keys.left = true;
+      if (e.key === 'ArrowRight') keys.right = true;
+    });
+    document.addEventListener('keyup', e => {
+      if (e.key === 'ArrowLeft') keys.left = false;
+      if (e.key === 'ArrowRight') keys.right = false;
+    });
+
+    canvas.addEventListener('touchstart', e => {
+      const touchX = e.touches[0].clientX;
+      const screenMid = window.innerWidth / 2;
+      if (touchX < screenMid) {
+        keys.left = true;
+        keys.right = false;
+      } else {
+        keys.right = true;
+        keys.left = false;
+      }
+    });
+    canvas.addEventListener('touchend', () => {
+      keys.left = false;
+      keys.right = false;
+    });
+
+    function movePlayer() {
+      if (keys.left && player.x > 0) player.x -= player.speed;
+      if (keys.right && player.x + player.width < canvas.width) player.x += player.speed;
+    }
+
+    function shoot() {
+      if (frame % 15 === 0) {
+        bullets.push({ x: player.x + player.width/2 - 2, y: player.y, width: 4, height: 10 });
+      }
+    }
+
+    function drawBullets() {
+      ctx.fillStyle = 'lime';
+      bullets.forEach((b, i) => {
+        b.y -= 8;
+        ctx.fillRect(b.x, b.y, b.width, b.height);
+        if (b.y < 0) bullets.splice(i, 1);
+      });
+    }
+
+    function spawnEnemies() {
+      if (frame % 60 === 0) {
+        enemies.push({
+          x: Math.random() * (canvas.width - 30),
+          y: -30,
+          width: 30,
+          height: 30,
+          speed: 2 + Math.random() * 2
+        });
+      }
+    }
+
+    function drawEnemies() {
+      ctx.fillStyle = 'red';
+      enemies.forEach((e, i) => {
+        e.y += e.speed;
+        ctx.fillRect(e.x, e.y, e.width, e.height);
+        if (e.y > canvas.height) enemies.splice(i, 1);
+      });
+    }
+
+    function detectHits() {
+      enemies.forEach((e, ei) => {
+        bullets.forEach((b, bi) => {
+          if (
+            b.x < e.x + e.width &&
+            b.x + b.width > e.x &&
+            b.y < e.y + e.height &&
+            b.y + b.height > e.y
+          ) {
+            enemies.splice(ei, 1);
+            bullets.splice(bi, 1);
+          }
+        });
+      });
+    }
+
+    function drawPlayer() {
+      ctx.drawImage(player.image, player.x, player.y, player.width, player.height);
+    }
+
+    function gameLoop() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      movePlayer();
+      drawPlayer();
+      shoot();
+      drawBullets();
+      spawnEnemies();
+      drawEnemies();
+      detectHits();
+      frame++;
+      requestAnimationFrame(gameLoop);
+    }
+
+    player.image.onload = () => {
+      gameLoop();
+    };
+  </script>
+</body>
+</html>
